@@ -1,5 +1,5 @@
 # DoctolibNotifier
-DoctolibNotifier is a Python package that automates checking for available appointment slots on Doctolib and notifies the user when slots are found. It leverages the NoDriver packge for browser automation and data retrieval.
+DoctolibNotifier is a Python package that automates checking for available appointment slots on the German Doctolib and notifies the user when slots are found. It leverages the [Nodriver package](https://github.com/ultrafunkamsterdam/nodriver/) for browser automation and data retrieval.
 
 ## How it works
 The `DoctolibNotifier` script automates checking for available appointment slots on Doctolib. It takes a Doctolib URL, parses it to extract query parameters, and builds a query string to fetch availability data. The script checks for available slots every 60 seconds. If slots within 15 days of today are found, it sounds a notification and prints the available dates to the console. If there are slots available beyond 15 days, it provides information on the next available slot.
