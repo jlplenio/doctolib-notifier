@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "doctolib-notifier"
+version = "0.1.0"
+description = ""
+authors = ["jlplenio <jan-lukas@plen.io>"]
+readme = "README.md"
+packages = [{include = "doctolib_notifier"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+nodriver = "^0.34"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
