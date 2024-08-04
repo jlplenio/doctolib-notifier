@@ -16,7 +16,12 @@ The authors recommend using Python 3.11. Follow these steps:
     poetry install
     ```
 
-4. **Start the Program**:
+4. **Grab the the Doctolib URL**: Navigate to the final appointments page and copy the url:
+![grafik](https://github.com/user-attachments/assets/2f47a0a8-1d56-4e84-82f6-0b3fdd6a7a56)
+
+
+
+5. **Start the Program**:
     ```
     poetry run python main.py your_doctolib_url_here
     ```
