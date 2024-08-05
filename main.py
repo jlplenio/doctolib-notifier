@@ -1,4 +1,3 @@
-import argparse
 import json
 import re
 import time
@@ -82,7 +81,7 @@ class DoctolibNotifier:
                 print(f"The next slot later than 15 days is: {next_slot}")
 
             print("Sleeping for 60s...")
-            time.sleep(60)
+            time.sleep(61)
 
     def main(self, initial_url):
         # Construct final query url
@@ -96,9 +95,5 @@ class DoctolibNotifier:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Give Doctolib notifier an URl to check.",
-                                     usage="main.py your_doctolib_url_here")
-    parser.add_argument("url", help="The URL to process")
-    args = parser.parse_args()
-
-    DoctolibNotifier().main(args.url)
+    url = input("Please paste in the URL of the practice:\n")
+    DoctolibNotifier().main(url)
