@@ -13,12 +13,14 @@ from loaders import NoDriver
 class DoctolibNotifier:
     def __init__(self):
         self.driver = NoDriver()
+        self.tld = ""
 
     def parse_initial_url(self, url):
         """Parse the initial URL to extract necessary query parameters and the practice name."""
         parsed_url = urlparse(url)
-        query_params = parse_qs(parsed_url.query)
+        query_params = parse_qs(parsed_url.query)#
         practice_name = unquote(parsed_url.path.split('/')[3])
+        self.tld = parsed_url.netloc.split('.')[-1]
         practice_id = query_params.get('placeId', [""])[0].split("-")[1]
         motive_ids = query_params.get('motiveIds[]', [])
         practitioner_id = query_params.get('practitionerId', [])
@@ -27,7 +29,7 @@ class DoctolibNotifier:
         return practice_name, practice_id, motive_ids, practitioner_id
 
     def fetch_practice_data(self, practice_name):
-        url = f"https://www.doctolib.de/online_booking/draft/new.json?id={practice_name}"
+        url = f"https://www.doctolib.{self.tld}/online_booking/api/slot_selection_funnel/v1/info.json?profile_slug={practice_name}"
         response_json = self.query_doctolib_to_json(url)
         return response_json
 
@@ -45,29 +47,6 @@ class DoctolibNotifier:
                                 agenda_ids.append(str(agenda_id))
         return agenda_ids
 
-    def filter_agenda_ids(self, data, motive_ids, raw_agenda_ids):
-        global filtered_agenda_ids
-        if 'data' in data and 'visit_motives' in data.get('data'):
-            configurations = [
-                motive.get('configurations')
-                for motive in data.get('data').get('visit_motives')
-                if str(motive.get('id')) in motive_ids
-            ]
-            configuration = configurations[0]  # ONLY filters for first motive, never seen multiple motives
-
-            filtered_agenda_ids = [
-                agenda_id
-                for agenda_id in raw_agenda_ids
-                if not any(
-                    str(config["agenda_id"]) == agenda_id
-                    and config["insurance"] == "public"
-                    and config["disabled"] is True
-                    for config in configuration
-                )
-            ]
-
-        return filtered_agenda_ids
-
     def construct_final_url(
         self, motive_ids, agenda_ids, practice_id, insurance_sector, telehealth, start_date, limit
     ):
@@ -75,7 +54,7 @@ class DoctolibNotifier:
         motive_ids = ','.join(motive_ids)
         agenda_ids = '-'.join(agenda_ids)
         url = (
-            f"https://www.doctolib.de/availabilities.json?visit_motive_ids={motive_ids}&agenda_ids={agenda_ids}"
+            f"https://www.doctolib.{self.tld}/availabilities.json?visit_motive_ids={motive_ids}&agenda_ids={agenda_ids}"
             f"&practice_ids={practice_id}&insurance_sector={insurance_sector}&telehealth={telehealth}"
             f"&start_date={start_date}&limit={limit}"
         )
@@ -94,7 +73,6 @@ class DoctolibNotifier:
         while True:
             available_dates = []
             response_json = self.query_doctolib_to_json(final_url)
-
             for availability in response_json['availabilities']:
                 if availability.get("slots"):
                     available_dates.append(availability["date"])
@@ -102,6 +80,7 @@ class DoctolibNotifier:
             if available_dates:
                 webbrowser.open(initial_url)
                 print(f"The following dates are available: {available_dates}")
+                break
 
             next_slot = response_json.get('next_slot')
             if next_slot:
@@ -115,9 +94,8 @@ class DoctolibNotifier:
         practice_name, practice_id, motive_ids, practitioner_id = self.parse_initial_url(initial_url)
         practice_data = self.fetch_practice_data(practice_name)
         raw_agenda_ids = self.extract_agenda_ids(practice_data, motive_ids, practitioner_id)
-        agenda_ids = self.filter_agenda_ids(practice_data, motive_ids, raw_agenda_ids)
         final_url = self.construct_final_url(
-            motive_ids, agenda_ids, practice_id, 'public', 'false', datetime.today().strftime('%Y-%m-%d'), '15'
+            motive_ids, raw_agenda_ids, practice_id, 'public', 'false', datetime.today().strftime('%Y-%m-%d'), '15'
         )
 
         print(f"The final query url is {final_url}")
