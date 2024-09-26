@@ -10,7 +10,7 @@ class NoDriver:
         asyncio.get_event_loop().run_until_complete(self.initialize_browser())
 
     async def initialize_browser(self):
-        self.browser = await uc.start(headless=True)
+        self.browser = await uc.start(headless=True, browser_args=['--window-position=-2400,-2400'])
 
     async def async_getter(self, url):
         try:
